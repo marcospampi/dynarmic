@@ -52,7 +52,7 @@ static Optimization::PolyfillOptions GenPolyfillOptions(const BlockOfCode& code)
     return Optimization::PolyfillOptions{
         .sha256 = !code.HasHostFeature(HostFeature::SHA),
         .vector_multiply_widen = true,
-    };Context
+    };
 }
 
 struct Jit::Impl final {
@@ -129,7 +129,7 @@ public:
 
     void Reset() {
         ASSERT(!is_executing);
-        jit_state = {};
+        // jit_state = {};
     }
 
     void HaltExecution(HaltReason hr) {

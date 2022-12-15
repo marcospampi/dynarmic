@@ -497,6 +497,11 @@ void BlockOfCode::EnsurePatchLocationSize(CodePtr begin, size_t size) {
     ASSERT(current_size <= size);
     nop(size - current_size);
 }
-
+void BlockOfCode::RegisterUserCallback(VAddr vaddr, CodePtr ptr, std::unique_ptr<Callback> cb) {
+    user_callbacks.push_back(std::make_tuple(vaddr,ptr, std::move(cb)));
+}
+const UserCallbacks& BlockOfCode::GetUserCallbacks() const {
+    return user_callbacks;
+}
 
 }  // namespace Dynarmic::Backend::X64

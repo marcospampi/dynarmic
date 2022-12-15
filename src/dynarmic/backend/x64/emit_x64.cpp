@@ -353,6 +353,7 @@ void EmitX64::Unpatch(const IR::LocationDescriptor& target_desc) {
 void EmitX64::ClearCache() {
     block_descriptors.clear();
     patch_information.clear();
+    ReloadUserCallbacks();
 
     PerfMapClear();
 }

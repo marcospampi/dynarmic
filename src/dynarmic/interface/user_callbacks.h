@@ -7,21 +7,21 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
-#include <vector>
 #include <optional>
 
 namespace Dynarmic {
 
 using VAddr = std::uint64_t;
 
+template < class Interface >
+using UserHookCallbackFn = void (*)(Interface*);
 
 template <class Interface>
 struct UserHookCallback {
     VAddr address;
-    std::optional<std::string> name,
-    void (*callback) (Interface*);
-    bool jump_back;
+    std::optional<const char*> name;
+    UserHookCallbackFn<Interface> callback;
+    bool return_back;
 };
 //using UserHookCallback = std::tuple<Vaddr, std::optional<std::string>, std::uint64_t(*)(Interface*)>;
 

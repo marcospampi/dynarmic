@@ -11,7 +11,9 @@
 
 #include "dynarmic/backend/x64/nzcv_util.h"
 #include "dynarmic/frontend/A64/a64_location_descriptor.h"
-
+namespace Dynarmic::A64 {
+    class Jit;
+}
 namespace Dynarmic::Backend::X64 {
 class Jit;
 class BlockOfCode;
@@ -24,7 +26,7 @@ class BlockOfCode;
 struct A64JitState {
     using ProgramCounterType = u64;
 
-    A64JitState(Jit *jit): jit(jit) { ResetRSB(); }
+    A64JitState(Dynarmic::A64::Jit *jit): jit(jit) { ResetRSB(); }
 
     std::array<u64, 31> reg{};
     u64 sp = 0;
@@ -64,7 +66,7 @@ struct A64JitState {
     u32 fpsr_qc = 0;
     u32 fpcr = 0;
 
-    Jit *jit;
+    Dynarmic::A64::Jit *jit;
 
     u32 GetFpcr() const;
     u32 GetFpsr() const;

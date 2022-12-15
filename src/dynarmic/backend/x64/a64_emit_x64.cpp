@@ -26,6 +26,7 @@
 #include "dynarmic/ir/cond.h"
 #include "dynarmic/ir/microinstruction.h"
 #include "dynarmic/ir/opcodes.h"
+#include "dynarmic/backend/x64/callback.h"
 
 // TODO: Have ARM flags in host flags and not have them use up GPR registers unless necessary.
 // TODO: Actually implement that proper instruction selector you've always wanted to sweetheart.
@@ -54,12 +55,16 @@ A64EmitX64::A64EmitX64(BlockOfCode& code, A64::UserConfig conf, A64::Jit* jit_in
     GenMemory128Accessors();
     GenFastmemFallbacks();
     GenTerminalHandlers();
+    GenUserCallbacks();
+    GenUserCallbacks();
     code.PreludeComplete();
     ClearFastDispatchTable();
 
     exception_handler.SetFastmemCallback([this](u64 rip_) {
         return FastmemCallback(rip_);
     });
+
+    ReloadUserCallbacks();
 }
 
 A64EmitX64::~A64EmitX64() = default;
@@ -750,17 +755,39 @@ void A64EmitX64::Unpatch(const IR::LocationDescriptor& location) {
     }
 }
 
-void A64EmitX64::GenUserCallback(std::unique_ptr<Callback> cb, VAddr addr, bool return_back) {
+void A64EmitX64::GenUserCallbacks(){
+    for ( const auto &cb: conf.user_hook_callback ) {
+        auto bundle = std::make_unique<SimpleCallback>(cb.callback);
+        GenUserCallback(std::move(bundle), cb.address, cb.return_back);
+    }
+}
+
+void A64EmitX64::GenUserCallback(std::unique_ptr<Callback> cb, VAddr vaddr, bool return_back) {
     code.align();
-    CodePtr location = block.getCurr();
+    CodePtr location = code.getCurr<CodePtr>();
 
     cb->EmitCall(code, [this](RegList param) {
         code.mov(param[0], qword[r15 +  offsetof(A64JitState, jit)]);
     });
     if ( return_back ) {
+        const auto pc_addr = qword[r15 + offsetof(A64JitState, pc)];
+        const auto lr_addr = qword[r15 + offsetof(A64JitState, reg) + sizeof(u64) * 30];
+        code.mov(rax, lr_addr);
+        code.mov(pc_addr, rax);
+    }
+    //code.ret();
+    code.ReturnFromRunCode();
+
+    code.RegisterUserCallback(vaddr, location, std::move(cb));
+}
+
+void A64EmitX64::ReloadUserCallbacks(){
+    for ( const auto &cb: code.GetUserCallbacks()) {
+        auto descriptor { IR::LocationDescriptor(std::get<0>(cb))};
+        auto entry { BlockDescriptor{std::get<1>(cb), 0}};
+        block_descriptors[descriptor] = entry;
+        //std::make_unique<ArgCallback>(LookupBlock, reinterpret_cast<u64>(arg))
         
     }
 }
-
-
 }  // namespace Dynarmic::Backend::X64
