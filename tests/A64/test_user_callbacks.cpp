@@ -32,7 +32,7 @@ void test_callback_halt( A64::Jit *jit ) {
 TEST_CASE("A64: Test 0xDEADBEEF", "[a64]") {
     A64TestEnv env;
     A64::UserConfig config{&env};
-    config.user_hook_callback = {
+    config.user_callbacks = {
         {0x20, "deadbeef_test", test_callback_0xdeadbeef, true }
     };
 
@@ -58,7 +58,7 @@ TEST_CASE("A64: Test increment", "[a64]") {
 
     A64TestEnv env;
     A64::UserConfig config{&env};
-    config.user_hook_callback = {
+    config.user_callbacks = {
         {0x100, "test_callback_increment", test_callback_increment, true }
     };
 
@@ -84,7 +84,7 @@ TEST_CASE("A64: Test test_callback_halt!", "[a64]") {
 
     A64TestEnv env;
     A64::UserConfig config{&env};
-    config.user_hook_callback = {
+    config.user_callbacks = {
         {0x100, "test_callback_halt", test_callback_halt<N>, true }
     };
 

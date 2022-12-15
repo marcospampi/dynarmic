@@ -83,8 +83,11 @@ A32EmitX64::A32EmitX64(BlockOfCode& code, A32::UserConfig conf, A32::Jit* jit_in
         : EmitX64(code), conf(std::move(conf)), jit_interface(jit_interface) {
     GenFastmemFallbacks();
     GenTerminalHandlers();
+    GenUserCallbacks();
+    
     code.PreludeComplete();
     ClearFastDispatchTable();
+    ReloadUserCallbacks();
 
     exception_handler.SetFastmemCallback([this](u64 rip_) {
         return FastmemCallback(rip_);
@@ -1284,6 +1287,36 @@ void A32EmitX64::Unpatch(const IR::LocationDescriptor& location) {
         (*fast_dispatch_table_lookup)(location.Value()) = {};
         code.EnableWriting();
     }
+}
+
+void A32EmitX64::GenUserCallbacks() {
+    for ( const auto &cb: conf.user_callbacks ) {
+        auto bundle = std::make_unique<SimpleCallback>(cb.callback);
+        GenUserCallback(std::move(bundle), cb.address, cb.return_back);
+    }
+}
+
+
+void A32EmitX64::GenUserCallback(std::unique_ptr<Callback> cb, VAddr vaddr, bool return_back) {
+    
+    code.align();
+    CodePtr location = code.getCurr<CodePtr>();
+
+    cb->EmitCall(code, [this](RegList param) {
+        code.mov(param[0], qword[r15 +  offsetof(A32JitState, jit)]);
+    });
+    if ( return_back ) {
+        constexpr auto LR = offsetof(A32JitState, Reg) + sizeof(u32) * static_cast<size_t>(A32::Reg::LR);
+        constexpr auto PC = offsetof(A32JitState, Reg) + sizeof(u32) * static_cast<size_t>(A32::Reg::PC);
+
+        const auto pc_addr = qword[r15 + PC ];
+        const auto lr_addr = qword[r15 + LR ];
+        code.mov(rax, lr_addr);
+        code.mov(pc_addr, rax);
+    }
+    code.ReturnFromRunCode();
+
+    code.RegisterUserCallback(vaddr, location, std::move(cb));
 }
 
 }  // namespace Dynarmic::Backend::X64

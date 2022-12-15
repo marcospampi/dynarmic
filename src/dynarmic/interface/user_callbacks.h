@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-
 namespace Dynarmic {
 
 using VAddr = std::uint64_t;
@@ -16,8 +15,8 @@ using VAddr = std::uint64_t;
 template < class Interface >
 using UserHookCallbackFn = void (*)(Interface*);
 
-template <class Interface>
-struct UserHookCallback {
+template <class VAddr, class Interface>
+struct UserCallback {
     VAddr address;
     std::optional<const char*> name;
     UserHookCallbackFn<Interface> callback;

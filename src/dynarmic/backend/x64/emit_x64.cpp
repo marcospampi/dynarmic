@@ -374,4 +374,12 @@ void EmitX64::InvalidateBasicBlocks(const tsl::robin_set<IR::LocationDescriptor>
     }
 }
 
+void EmitX64::ReloadUserCallbacks(){
+    for ( const auto &cb: code.GetUserCallbacks()) {
+        auto descriptor { IR::LocationDescriptor(std::get<0>(cb))};
+        auto entry { BlockDescriptor{std::get<1>(cb), 0}};
+        block_descriptors[descriptor] = entry;        
+    }
+}
+
 }  // namespace Dynarmic::Backend::X64

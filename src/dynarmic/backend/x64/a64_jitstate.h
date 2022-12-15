@@ -26,7 +26,7 @@ class BlockOfCode;
 struct A64JitState {
     using ProgramCounterType = u64;
 
-    A64JitState(Dynarmic::A64::Jit *jit): jit(jit) { ResetRSB(); }
+    A64JitState() { ResetRSB(); }
 
     std::array<u64, 31> reg{};
     u64 sp = 0;

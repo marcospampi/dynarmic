@@ -144,9 +144,8 @@ protected:
     void EmitPatchMovRcx(CodePtr target_code_ptr = nullptr) override;
 
 public:
-    void GenUserCallbacks() override {}
-    void GenUserCallback(std::unique_ptr<Callback> ,VAddr, bool) override {}
-    void ReloadUserCallbacks() override {}
+    void GenUserCallbacks() override;
+    void GenUserCallback(std::unique_ptr<Callback> ,VAddr, bool) override;
 };
 
 }  // namespace Dynarmic::Backend::X64

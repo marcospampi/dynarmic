@@ -8,7 +8,9 @@
 #include <array>
 
 #include <mcl/stdint.hpp>
-
+namespace Dynarmic::A32 {
+    class Jit;
+}
 namespace Dynarmic::Backend::X64 {
 
 class BlockOfCode;
@@ -55,6 +57,9 @@ struct A32JitState {
     u32 fpsr_exc = 0;
     u32 fpsr_qc = 0;
     u32 fpsr_nzcv = 0;
+
+    A32::Jit *jit;
+
     u32 Fpscr() const;
     void SetFpscr(u32 FPSCR);
 
