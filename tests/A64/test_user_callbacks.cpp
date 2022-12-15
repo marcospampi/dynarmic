@@ -13,10 +13,20 @@ using namespace Dynarmic;
 void test_callback_0xdeadbeef( A64::Jit *jit ) {
     jit->SetRegister(1, 0xDEADBEEF);
 }
-
 void test_callback_increment( A64::Jit *jit ) {
     auto value = jit->GetRegister(1);
     jit->SetRegister(1, value + 1);
+}
+
+template < std::uint_fast64_t N>
+void test_callback_halt( A64::Jit *jit ) {
+    auto value = jit->GetRegister(1);
+    if ( value > N - 1) {
+        jit->HaltExecution(HaltReason::UserDefined1);
+    }
+    else {
+        jit->SetRegister(1, value + 1);
+    }
 }
 
 TEST_CASE("A64: Test 0xDEADBEEF", "[a64]") {
@@ -49,6 +59,9 @@ void test_callback0xdeadbeef( A64::Jit *jit ) {
 }
 
 TEST_CASE("A64: Test increment", "[a64]") {
+    // Increment N times register 1
+    const auto N_times = 0xdead;
+
     A64TestEnv env;
     A64::UserConfig config{&env};
     config.user_hook_callback = {
@@ -58,17 +71,42 @@ TEST_CASE("A64: Test increment", "[a64]") {
     A64::Jit jit{config};
 
     env.code_mem.emplace_back(0xd63f0000);  // BLR X0
-    env.code_mem.emplace_back(0x17FFFFFF);  // B .
+    env.code_mem.emplace_back(0x17FFFFFF);  // B #-4
 
     jit.SetRegister(0, 0x100);
     jit.SetRegister(1, 0);
     jit.SetPC(0);
 
-    env.ticks_left = 20*2 - 1;
+    env.ticks_left = N_times*2 - 1;
     jit.Run();
 
-    //REQUIRE(jit.GetRegister(0) == 3);
-    REQUIRE(jit.GetRegister(1) == 20);
-    //REQUIRE(jit.GetRegister(2) == 2);
-    //REQUIRE(jit.GetPC() == 4);
+    REQUIRE(jit.GetRegister(1) == N_times);
+
+}
+
+TEST_CASE("A64: Test test_callback_halt!", "[a64]") {
+    // Increment N times register 1
+    constexpr auto N = 64;
+
+    A64TestEnv env;
+    A64::UserConfig config{&env};
+    config.user_hook_callback = {
+        {0x100, "test_callback_halt", test_callback_halt<N>, true }
+    };
+
+    A64::Jit jit{config};
+
+    env.code_mem.emplace_back(0xd63f0000);  // BLR X0
+    env.code_mem.emplace_back(0x17FFFFFF);  // B #-4
+
+    jit.SetRegister(0, 0x100);
+    jit.SetRegister(1, 0);
+    jit.SetPC(0);
+
+    env.ticks_left = N*4 ;
+    auto result = jit.Run();
+
+    REQUIRE(jit.GetRegister(1) == N);
+    REQUIRE(result == HaltReason::UserDefined1);
+
 }

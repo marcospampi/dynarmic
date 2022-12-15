@@ -56,7 +56,6 @@ A64EmitX64::A64EmitX64(BlockOfCode& code, A64::UserConfig conf, A64::Jit* jit_in
     GenFastmemFallbacks();
     GenTerminalHandlers();
     GenUserCallbacks();
-    GenUserCallbacks();
     code.PreludeComplete();
     ClearFastDispatchTable();
 
