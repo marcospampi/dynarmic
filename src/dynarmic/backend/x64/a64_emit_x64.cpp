@@ -750,4 +750,14 @@ void A64EmitX64::Unpatch(const IR::LocationDescriptor& location) {
     }
 }
 
+void A64EmitX64::GenUserCallback(std::unique_ptr<Callback> cb, VAddr addr, bool return_back) {
+    align();
+    CodePtr location = block.getCurr();
+
+    cb->EmitCall(*this, [this](RegList param) {
+        mov(param[0], qword[r15 +  offsetof()]);
+    });
+}
+
+
 }  // namespace Dynarmic::Backend::X64

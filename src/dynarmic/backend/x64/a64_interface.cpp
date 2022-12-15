@@ -52,13 +52,14 @@ static Optimization::PolyfillOptions GenPolyfillOptions(const BlockOfCode& code)
     return Optimization::PolyfillOptions{
         .sha256 = !code.HasHostFeature(HostFeature::SHA),
         .vector_multiply_widen = true,
-    };
+    };Context
 }
 
 struct Jit::Impl final {
 public:
     Impl(Jit* jit, UserConfig conf)
             : conf(conf)
+            , jit_state(A64JitState(jit))
             , block_of_code(GenRunCodeCallbacks(conf.callbacks, &GetCurrentBlockThunk, this, conf), JitStateInfo{jit_state}, conf.code_cache_size, GenRCP(conf))
             , emitter(block_of_code, conf, jit)
             , polyfill_options(GenPolyfillOptions(block_of_code)) {
@@ -239,7 +240,7 @@ public:
     }
 
 private:
-    static CodePtr GetCurrentBlockThunk(void* thisptr) {
+    static CodePtr GetCurrentBlockThunk(void* thisptr) { ///diocane
         Jit::Impl* this_ = static_cast<Jit::Impl*>(thisptr);
         return this_->GetCurrentBlock();
     }
@@ -256,7 +257,7 @@ private:
         return GetBlock(A64::LocationDescriptor{GetCurrentLocation()}.SetSingleStepping(true));
     }
 
-    CodePtr GetBlock(IR::LocationDescriptor current_location) {
+    CodePtr GetBlock(IR::LocationDescriptor current_location) { // get block
         if (auto block = emitter.GetBasicBlock(current_location))
             return block->entrypoint;
 

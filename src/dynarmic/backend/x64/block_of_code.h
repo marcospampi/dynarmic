@@ -26,6 +26,7 @@
 namespace Dynarmic::Backend::X64 {
 
 using CodePtr = const void*;
+using VAddr = std::uint64_t;
 
 struct RunCodeCallbacks {
     std::unique_ptr<Callback> LookupBlock;
@@ -143,6 +144,7 @@ public:
     void SetCodePtr(CodePtr code_ptr);
     void EnsurePatchLocationSize(CodePtr begin, size_t size);
 
+
     // ABI registers
 #ifdef _WIN32
     static const Xbyak::Reg64 ABI_RETURN;
@@ -185,6 +187,9 @@ private:
     static constexpr size_t FORCE_RETURN = 1 << 1;
     std::array<const void*, 4> return_from_run_code;
     void GenRunCode(std::function<void(BlockOfCode&)> rcp);
+    
+
+    std::vector<std::tuple<CodePtr*, VAddr, >> callbacks{}; 
 
     const HostFeature host_features;
 };

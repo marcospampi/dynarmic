@@ -13,7 +13,7 @@
 #include "dynarmic/frontend/A64/a64_location_descriptor.h"
 
 namespace Dynarmic::Backend::X64 {
-
+class Jit;
 class BlockOfCode;
 
 #ifdef _MSC_VER
@@ -24,7 +24,7 @@ class BlockOfCode;
 struct A64JitState {
     using ProgramCounterType = u64;
 
-    A64JitState() { ResetRSB(); }
+    A64JitState(Jit *jit_interface): jit(jit_interface) { ResetRSB(); }
 
     std::array<u64, 31> reg{};
     u64 sp = 0;
@@ -63,6 +63,9 @@ struct A64JitState {
     u32 fpsr_exc = 0;
     u32 fpsr_qc = 0;
     u32 fpcr = 0;
+
+    Jit *jit;
+
     u32 GetFpcr() const;
     u32 GetFpsr() const;
     void SetFpcr(u32 value);

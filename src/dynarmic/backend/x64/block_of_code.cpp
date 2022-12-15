@@ -216,7 +216,7 @@ BlockOfCode::BlockOfCode(RunCodeCallbacks cb, JitStateInfo jsi, size_t total_cod
 
 void BlockOfCode::PreludeComplete() {
     prelude_complete = true;
-    code_begin = getCurr();
+    code_begin = getCurr();  // this is where no more saved code could be added!
     ClearCache();
     DisableWriting();
 }
@@ -497,5 +497,6 @@ void BlockOfCode::EnsurePatchLocationSize(CodePtr begin, size_t size) {
     ASSERT(current_size <= size);
     nop(size - current_size);
 }
+
 
 }  // namespace Dynarmic::Backend::X64
