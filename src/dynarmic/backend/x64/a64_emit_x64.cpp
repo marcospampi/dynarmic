@@ -751,12 +751,15 @@ void A64EmitX64::Unpatch(const IR::LocationDescriptor& location) {
 }
 
 void A64EmitX64::GenUserCallback(std::unique_ptr<Callback> cb, VAddr addr, bool return_back) {
-    align();
+    code.align();
     CodePtr location = block.getCurr();
 
-    cb->EmitCall(*this, [this](RegList param) {
-        mov(param[0], qword[r15 +  offsetof()]);
+    cb->EmitCall(code, [this](RegList param) {
+        code.mov(param[0], qword[r15 +  offsetof(A64JitState, jit)]);
     });
+    if ( return_back ) {
+        
+    }
 }
 
 
