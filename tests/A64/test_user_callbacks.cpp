@@ -18,7 +18,7 @@ void test_callback_increment( A64::Jit *jit ) {
     jit->SetRegister(1, value + 1);
 }
 
-template < std::uint_fast64_t N>
+template < std::uint64_t N>
 void test_callback_halt( A64::Jit *jit ) {
     auto value = jit->GetRegister(1);
     if ( value > N - 1) {
@@ -48,15 +48,9 @@ TEST_CASE("A64: Test 0xDEADBEEF", "[a64]") {
     env.ticks_left = 2;
     jit.Run();
 
-    //REQUIRE(jit.GetRegister(0) == 3);
     REQUIRE(jit.GetRegister(1) == 0xDEADBEEF);
-    //REQUIRE(jit.GetRegister(2) == 2);
-    //REQUIRE(jit.GetPC() == 4);
 }
 
-void test_callback0xdeadbeef( A64::Jit *jit ) {
-    jit->SetRegister(1, 0xDEADBEEF);
-}
 
 TEST_CASE("A64: Test increment", "[a64]") {
     // Increment N times register 1
