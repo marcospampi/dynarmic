@@ -142,6 +142,10 @@ protected:
     void EmitPatchJz(const IR::LocationDescriptor& target_desc, CodePtr target_code_ptr = nullptr) override;
     void EmitPatchJmp(const IR::LocationDescriptor& target_desc, CodePtr target_code_ptr = nullptr) override;
     void EmitPatchMovRcx(CodePtr target_code_ptr = nullptr) override;
+
+public:
+    void GenUserCallbacks() override;
+    void GenUserCallback(std::unique_ptr<Callback> ,VAddr, bool) override;
 };
 
 }  // namespace Dynarmic::Backend::X64

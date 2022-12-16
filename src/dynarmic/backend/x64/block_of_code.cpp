@@ -216,7 +216,7 @@ BlockOfCode::BlockOfCode(RunCodeCallbacks cb, JitStateInfo jsi, size_t total_cod
 
 void BlockOfCode::PreludeComplete() {
     prelude_complete = true;
-    code_begin = getCurr();
+    code_begin = getCurr();  // this is where no more saved code could be added!
     ClearCache();
     DisableWriting();
 }
@@ -496,6 +496,12 @@ void BlockOfCode::EnsurePatchLocationSize(CodePtr begin, size_t size) {
     size_t current_size = getCurr<const u8*>() - reinterpret_cast<const u8*>(begin);
     ASSERT(current_size <= size);
     nop(size - current_size);
+}
+void BlockOfCode::RegisterUserCallback(VAddr vaddr, CodePtr ptr, std::unique_ptr<Callback> cb) {
+    user_callbacks.push_back(std::make_tuple(vaddr,ptr, std::move(cb)));
+}
+const UserCallbacks& BlockOfCode::GetUserCallbacks() const {
+    return user_callbacks;
 }
 
 }  // namespace Dynarmic::Backend::X64

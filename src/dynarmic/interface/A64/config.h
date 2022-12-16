@@ -10,8 +10,10 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <tuple>
 
 #include "dynarmic/interface/optimization_flags.h"
+#include "dynarmic/interface/user_callbacks.h"
 
 namespace Dynarmic {
 class ExclusiveMonitor;
@@ -20,9 +22,13 @@ class ExclusiveMonitor;
 namespace Dynarmic {
 namespace A64 {
 
+class Jit;
+
 using VAddr = std::uint64_t;
 
 using Vector = std::array<std::uint64_t, 2>;
+
+
 static_assert(sizeof(Vector) == sizeof(std::uint64_t) * 2, "Vector must be 128 bits in size");
 
 enum class Exception {
@@ -288,6 +294,9 @@ struct UserConfig {
     // Minimum size is about 8MiB. Maximum size is about 2GiB. Maximum size is limited by
     // the maximum length of a x64 jump.
     size_t code_cache_size = 256 * 1024 * 1024;  // bytes
+
+    // A vector of callbacks that guest can call by jump to their defined address
+    std::vector<UserCallback<VAddr, Jit>> user_callbacks = {};
 };
 
 }  // namespace A64

@@ -26,6 +26,7 @@
 #include "dynarmic/ir/cond.h"
 #include "dynarmic/ir/microinstruction.h"
 #include "dynarmic/ir/opcodes.h"
+#include "dynarmic/backend/x64/callback.h"
 
 // TODO: Have ARM flags in host flags and not have them use up GPR registers unless necessary.
 // TODO: Actually implement that proper instruction selector you've always wanted to sweetheart.
@@ -54,12 +55,18 @@ A64EmitX64::A64EmitX64(BlockOfCode& code, A64::UserConfig conf, A64::Jit* jit_in
     GenMemory128Accessors();
     GenFastmemFallbacks();
     GenTerminalHandlers();
+    GenUserCallbacks();
+
     code.PreludeComplete();
     ClearFastDispatchTable();
+    ReloadUserCallbacks();
 
     exception_handler.SetFastmemCallback([this](u64 rip_) {
         return FastmemCallback(rip_);
     });
+
+    
+
 }
 
 A64EmitX64::~A64EmitX64() = default;
@@ -749,5 +756,34 @@ void A64EmitX64::Unpatch(const IR::LocationDescriptor& location) {
         code.EnableWriting();
     }
 }
+
+void A64EmitX64::GenUserCallbacks(){
+    for ( const auto &cb: conf.user_callbacks ) {
+        auto bundle = std::make_unique<SimpleCallback>(cb.callback);
+        GenUserCallback(std::move(bundle), cb.address, cb.return_back);
+    }
+}
+
+
+void A64EmitX64::GenUserCallback(std::unique_ptr<Callback> cb, VAddr vaddr, bool return_back) {
+    code.align();
+    CodePtr location = code.getCurr<CodePtr>();
+
+    cb->EmitCall(code, [this](RegList param) {
+        code.mov(param[0], qword[r15 +  offsetof(A64JitState, jit)]);
+    });
+    if ( return_back ) {
+        constexpr auto LR = static_cast<size_t>(A64::Reg::LR);
+
+        const auto pc_addr = qword[r15 + offsetof(A64JitState, pc)];
+        const auto lr_addr = qword[r15 + offsetof(A64JitState, reg) + sizeof(u64) * LR];
+        code.mov(rax, lr_addr);
+        code.mov(pc_addr, rax);
+    }
+    code.ReturnFromRunCode();
+
+    code.RegisterUserCallback(vaddr, location, std::move(cb));
+}
+
 
 }  // namespace Dynarmic::Backend::X64

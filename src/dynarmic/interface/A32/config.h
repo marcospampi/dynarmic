@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <vector>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -14,6 +15,7 @@
 #include "dynarmic/frontend/A32/translate/translate_callbacks.h"
 #include "dynarmic/interface/A32/arch_version.h"
 #include "dynarmic/interface/optimization_flags.h"
+#include "dynarmic/interface/user_callbacks.h"
 
 namespace Dynarmic {
 class ExclusiveMonitor;
@@ -24,6 +26,7 @@ namespace A32 {
 
 using VAddr = std::uint32_t;
 
+class Jit;
 class Coprocessor;
 
 enum class Exception {
@@ -231,6 +234,10 @@ struct UserConfig {
     // Minimum size is about 8MiB. Maximum size is about 2GiB. Maximum size is limited by
     // the maximum length of a x64 jump.
     size_t code_cache_size = 256 * 1024 * 1024;  // bytes
+
+    // A vector of callbacks that guest can call by jump to their defined address
+    std::vector<UserCallback<VAddr, Jit>> user_callbacks = {};
+
 };
 
 }  // namespace A32

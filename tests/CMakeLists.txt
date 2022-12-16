@@ -13,6 +13,8 @@ if ("A32" IN_LIST DYNARMIC_FRONTENDS)
         A32/test_arm_instructions.cpp
         A32/test_coprocessor.cpp
         A32/test_thumb_instructions.cpp
+        A32/test_user_callbacks.cpp
+
         A32/testenv.h
         decoder_tests.cpp
     )
@@ -23,6 +25,7 @@ if ("A64" IN_LIST DYNARMIC_FRONTENDS)
         A64/a64.cpp
         A64/misaligned_page_table.cpp
         A64/test_invalidation.cpp
+        A64/test_user_callbacks.cpp
         A64/testenv.h
     )
 endif()

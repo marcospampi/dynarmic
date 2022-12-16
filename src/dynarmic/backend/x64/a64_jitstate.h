@@ -11,9 +11,11 @@
 
 #include "dynarmic/backend/x64/nzcv_util.h"
 #include "dynarmic/frontend/A64/a64_location_descriptor.h"
-
+namespace Dynarmic::A64 {
+    class Jit;
+}
 namespace Dynarmic::Backend::X64 {
-
+class Jit;
 class BlockOfCode;
 
 #ifdef _MSC_VER
@@ -63,6 +65,9 @@ struct A64JitState {
     u32 fpsr_exc = 0;
     u32 fpsr_qc = 0;
     u32 fpcr = 0;
+
+    Dynarmic::A64::Jit *jit;
+
     u32 GetFpcr() const;
     u32 GetFpsr() const;
     void SetFpcr(u32 value);

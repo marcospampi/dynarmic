@@ -353,6 +353,7 @@ void EmitX64::Unpatch(const IR::LocationDescriptor& target_desc) {
 void EmitX64::ClearCache() {
     block_descriptors.clear();
     patch_information.clear();
+    ReloadUserCallbacks();
 
     PerfMapClear();
 }
@@ -370,6 +371,14 @@ void EmitX64::InvalidateBasicBlocks(const tsl::robin_set<IR::LocationDescriptor>
         Unpatch(descriptor);
 
         block_descriptors.erase(it);
+    }
+}
+
+void EmitX64::ReloadUserCallbacks(){
+    for ( const auto &cb: code.GetUserCallbacks()) {
+        auto descriptor { IR::LocationDescriptor(std::get<0>(cb))};
+        auto entry { BlockDescriptor{std::get<1>(cb), 0}};
+        block_descriptors[descriptor] = entry;        
     }
 }
 

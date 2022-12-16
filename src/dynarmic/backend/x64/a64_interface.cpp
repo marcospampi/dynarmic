@@ -59,10 +59,14 @@ struct Jit::Impl final {
 public:
     Impl(Jit* jit, UserConfig conf)
             : conf(conf)
+            , jit(jit)
             , block_of_code(GenRunCodeCallbacks(conf.callbacks, &GetCurrentBlockThunk, this, conf), JitStateInfo{jit_state}, conf.code_cache_size, GenRCP(conf))
             , emitter(block_of_code, conf, jit)
             , polyfill_options(GenPolyfillOptions(block_of_code)) {
         ASSERT(conf.page_table_address_space_bits >= 12 && conf.page_table_address_space_bits <= 64);
+        
+        // sets up jit_state with jit
+        Reset();
     }
 
     ~Impl() = default;
@@ -129,6 +133,8 @@ public:
     void Reset() {
         ASSERT(!is_executing);
         jit_state = {};
+        jit_state.jit = jit;
+
     }
 
     void HaltExecution(HaltReason hr) {
@@ -239,7 +245,7 @@ public:
     }
 
 private:
-    static CodePtr GetCurrentBlockThunk(void* thisptr) {
+    static CodePtr GetCurrentBlockThunk(void* thisptr) { ///diocane
         Jit::Impl* this_ = static_cast<Jit::Impl*>(thisptr);
         return this_->GetCurrentBlock();
     }
@@ -256,7 +262,7 @@ private:
         return GetBlock(A64::LocationDescriptor{GetCurrentLocation()}.SetSingleStepping(true));
     }
 
-    CodePtr GetBlock(IR::LocationDescriptor current_location) {
+    CodePtr GetBlock(IR::LocationDescriptor current_location) { // get block
         if (auto block = emitter.GetBasicBlock(current_location))
             return block->entrypoint;
 
@@ -317,6 +323,7 @@ private:
     bool is_executing = false;
 
     const UserConfig conf;
+    Jit *jit;
     A64JitState jit_state;
     BlockOfCode block_of_code;
     A64EmitX64 emitter;

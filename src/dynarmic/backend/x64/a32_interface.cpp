@@ -189,7 +189,10 @@ private:
 };
 
 Jit::Jit(UserConfig conf)
-        : impl(std::make_unique<Impl>(this, std::move(conf))) {}
+        : impl(std::make_unique<Impl>(this, std::move(conf))) {
+            // sets up jit state with jit
+            Reset();
+        }
 
 Jit::~Jit() = default;
 
@@ -230,6 +233,7 @@ void Jit::InvalidateCacheRange(std::uint32_t start_address, std::size_t length) 
 void Jit::Reset() {
     ASSERT(!is_executing);
     impl->jit_state = {};
+    impl->jit_state.jit = this;
 }
 
 void Jit::HaltExecution(HaltReason hr) {
@@ -339,6 +343,7 @@ void Jit::SaveContext(Context& ctx) const {
 void Jit::LoadContext(const Context& ctx) {
     bool reset_rsb = ctx.impl->invalid_cache_generation != impl->invalid_cache_generation;
     impl->jit_state.TransferJitState(ctx.impl->jit_state, reset_rsb);
+    impl->jit_state.jit = this;
 }
 
 void Jit::DumpDisassembly() const {

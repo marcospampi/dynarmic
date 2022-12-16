@@ -134,6 +134,9 @@ protected:
     virtual void EmitPatchJmp(const IR::LocationDescriptor& target_desc, CodePtr target_code_ptr = nullptr) = 0;
     virtual void EmitPatchMovRcx(CodePtr target_code_ptr = nullptr) = 0;
 
+    virtual void GenUserCallback(std::unique_ptr<Callback> cb, VAddr addr, bool return_back) = 0;
+    virtual void GenUserCallbacks() = 0;
+    virtual void ReloadUserCallbacks();
     // State
     BlockOfCode& code;
     ExceptionHandler exception_handler;
