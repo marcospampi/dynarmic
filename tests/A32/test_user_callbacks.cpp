@@ -18,13 +18,18 @@ void test_callback_increment( A32::Jit *jit ) {
     jit->Regs()[1] = value + 1;
 }
 
-template < std::uint64_t N>
+template <std::uint32_t N>
 void test_callback_halt( A32::Jit *jit ) {
     auto value = jit->Regs()[1];
-    if ( value > N - 1) {
+    std::cout << fmt::format("R1= 0x{:08X}", value) << std::endl;
+
+    if ( value + 1 > N ) {
+        
+        std::cout << fmt::format("Halt!") << std::endl;
         jit->HaltExecution(HaltReason::UserDefined1);
     }
     else {
+        std::cout << fmt::format("Increment!") << std::endl;
         jit->Regs()[1] = value + 1;
     }
 }
@@ -42,11 +47,8 @@ TEST_CASE("A32: Test 0xDEADBEEF", "[a32]") {
         0xe12fff30,
         0xeafffffe  // b +#0
     };
-    //env.code_mem.emplace_back(0x4798);  // BLX R3
-    //env.code_mem.emplace_back(0xfde7);  // B #-2
 
     jit.Regs()[0] = 0x20;
-    //jit.Regs()[1] = 1;
     jit.Regs()[15]  = 0;
     jit.SetCpsr(0x000001d0);  // User-mode
 
@@ -75,7 +77,6 @@ TEST_CASE("A32: Test increment", "[a32]") {
     };
 
     jit.Regs()[0] = 0x20;
-    //jit.Regs()[1] = 1;
     jit.Regs()[15]  = 0;
     jit.SetCpsr(0x000001d0);  // User-mode
 
@@ -87,31 +88,29 @@ TEST_CASE("A32: Test increment", "[a32]") {
 }
 
 TEST_CASE("A32: Test test_callback_halt!", "[a32]") {
-    // Increment N times register 1
     constexpr auto N = 64;
 
-    ArmTestEnv env;
-    A32::UserConfig config{&env};
+    ArmTestEnv test_env;
+    A32::UserConfig config{&test_env};
     config.user_callbacks = {
-        {0x100, "test_callback_halt", test_callback_halt<N>, true }
+        {0x20, "test_callback_increment", test_callback_halt<N>, true }
     };
 
     A32::Jit jit{config};
-    env.code_mem = {
+    
+    test_env.code_mem = {
         0xe12fff30, // blx r0
-        0xeafffffd  // b #-4
+        0xeafffffd  // b -#4 
     };
 
-    jit.Regs()[0]  = 0x100;
-    jit.Regs()[1]  = 0;
-    jit.Regs()[15] = 0;
+    jit.Regs()[0] = 0x20;
+    jit.Regs()[15]  = 0;
     jit.SetCpsr(0x000001d0);  // User-mode
 
-    env.ticks_left = N*4 ;
+    test_env.ticks_left = N*4;
     auto result = jit.Run();
 
-    REQUIRE(jit.Cpsr() == 0x000001d0);
-    REQUIRE(jit.Regs()[1] == N);
-    REQUIRE(result == HaltReason::UserDefined1);
+    REQUIRE(jit.Regs()[1]== N);
+    REQUIRE( result== HaltReason::UserDefined1 );
 
 }

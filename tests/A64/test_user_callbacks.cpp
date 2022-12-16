@@ -18,10 +18,10 @@ void test_callback_increment( A64::Jit *jit ) {
     jit->SetRegister(1, value + 1);
 }
 
-template < std::uint64_t N>
+template <std::uint64_t N>
 void test_callback_halt( A64::Jit *jit ) {
     auto value = jit->GetRegister(1);
-    if ( value > N - 1) {
+    if ( value + 1 > N ) {
         jit->HaltExecution(HaltReason::UserDefined1);
     }
     else {

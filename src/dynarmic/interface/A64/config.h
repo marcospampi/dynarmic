@@ -296,7 +296,7 @@ struct UserConfig {
     size_t code_cache_size = 256 * 1024 * 1024;  // bytes
 
     // A vector of callbacks that guest can call by jump to their defined address
-    std::vector<UserCallback<VAddr, Jit>> user_callbacks;
+    std::vector<UserCallback<VAddr, Jit>> user_callbacks = {};
 };
 
 }  // namespace A64
