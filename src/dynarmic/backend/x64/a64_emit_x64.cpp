@@ -757,10 +757,12 @@ void A64EmitX64::Unpatch(const IR::LocationDescriptor& location) {
     }
 }
 
-void A64EmitX64::GenUserCallbacks(){
-    for ( const auto &cb: conf.user_callbacks ) {
-        auto bundle = std::make_unique<SimpleCallback>(cb.callback);
-        GenUserCallback(std::move(bundle), cb.address, cb.return_back);
+void A64EmitX64::GenUserCallbacks() {
+    if ( conf.user_callbacks != nullptr ) {
+        for ( const auto &cb: *conf.user_callbacks ) {
+            auto bundle = std::make_unique<SimpleCallback>(cb.callback);
+            GenUserCallback(std::move(bundle), cb.address, cb.return_back);
+        }
     }
 }
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstddef>
+#include <vector>
 #include <cstdint>
 #include <optional>
 namespace Dynarmic {
@@ -22,6 +23,9 @@ struct UserCallback {
     UserHookCallbackFn<Interface> callback;
     bool return_back;
 };
+
+template <class VAddr, class Interface>
+using CallbackVector = std::vector<UserCallback<VAddr, Interface>>;
 //using UserHookCallback = std::tuple<Vaddr, std::optional<std::string>, std::uint64_t(*)(Interface*)>;
 
 }
