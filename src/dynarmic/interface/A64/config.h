@@ -13,7 +13,7 @@
 #include <tuple>
 
 #include "dynarmic/interface/optimization_flags.h"
-#include "dynarmic/interface/user_callbacks.h"
+#include "dynarmic/interface/thunks.h"
 
 namespace Dynarmic {
 class ExclusiveMonitor;
@@ -249,6 +249,7 @@ struct UserConfig {
     /// MemoryRead*/MemoryWrite* callbacks.
     void* fastmem_pointer = nullptr;
 
+    /// HACK:
     /// Enables fastmem of pointer base 0
     bool fastmem_allow_zero_base = false;
 
@@ -300,10 +301,11 @@ struct UserConfig {
     size_t code_cache_size = 256 * 1024 * 1024;  // bytes
 
     // A vector of callbacks that guest can call by jump to their defined address
-    const CallbackVector<VAddr, Jit> *user_callbacks = nullptr;
+    const ThunkVector<VAddr, Jit> *thunk_vector = nullptr;
 
-    // Exit address, whenever the CPU jumps to this value, execution will halt
-    std::optional<VAddr> vmcall_exit_address = std::nullopt;
+    /// HACK:
+    /// Exit address, whenever the CPU jumps to this value, execution will halt
+    VAddr vmcall_exit_address = 0xFFFF'FFFF'FFFF'FFFF;
 };
 
 }  // namespace A64

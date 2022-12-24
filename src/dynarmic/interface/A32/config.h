@@ -15,7 +15,7 @@
 #include "dynarmic/frontend/A32/translate/translate_callbacks.h"
 #include "dynarmic/interface/A32/arch_version.h"
 #include "dynarmic/interface/optimization_flags.h"
-#include "dynarmic/interface/user_callbacks.h"
+#include "dynarmic/interface/thunks.h"
 
 namespace Dynarmic {
 class ExclusiveMonitor;
@@ -236,7 +236,7 @@ struct UserConfig {
     size_t code_cache_size = 256 * 1024 * 1024;  // bytes
 
     // A vector of callbacks that guest can call by jump to their defined address
-    const CallbackVector<VAddr, Jit> *user_callbacks = nullptr;
+    const ThunkVector<VAddr, Jit> *thunk_vector = nullptr;
 
 };
 

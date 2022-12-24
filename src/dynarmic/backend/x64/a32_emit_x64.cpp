@@ -1290,8 +1290,8 @@ void A32EmitX64::Unpatch(const IR::LocationDescriptor& location) {
 }
 
 void A32EmitX64::GenUserCallbacks() {
-     if ( conf.user_callbacks != nullptr ) {
-        for ( const auto &cb: *conf.user_callbacks ) {
+     if ( conf.thunk_vector != nullptr ) {
+        for ( const auto &cb: *conf.thunk_vector ) {
             auto bundle = std::make_unique<SimpleCallback>(cb.callback);
             GenUserCallback(std::move(bundle), cb.address, cb.return_back);
         }

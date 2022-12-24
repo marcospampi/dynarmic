@@ -331,6 +331,10 @@ void BlockOfCode::GenRunCode(std::function<void(BlockOfCode&)> rcp) {
         jng(return_to_caller);
     }
     cb.LookupBlock->EmitCall(*this);
+    
+    test(ABI_RETURN, ABI_RETURN); // do not jump if codeptr is zero
+    jz(return_to_caller);
+    
     jmp(ABI_RETURN);
 
     align();
@@ -344,6 +348,10 @@ void BlockOfCode::GenRunCode(std::function<void(BlockOfCode&)> rcp) {
     }
     SwitchMxcsrOnEntry();
     cb.LookupBlock->EmitCall(*this);
+
+    test(ABI_RETURN, ABI_RETURN); // do not jump if codeptr is zero
+    jz(return_to_caller);
+
     jmp(ABI_RETURN);
 
     align();
@@ -498,10 +506,10 @@ void BlockOfCode::EnsurePatchLocationSize(CodePtr begin, size_t size) {
     nop(size - current_size);
 }
 void BlockOfCode::RegisterUserCallback(VAddr vaddr, CodePtr ptr, std::unique_ptr<Callback> cb) {
-    user_callbacks.push_back(std::make_tuple(vaddr,ptr, std::move(cb)));
+    thunks.push_back(std::make_tuple(vaddr,ptr, std::move(cb)));
 }
-const UserCallbacks& BlockOfCode::GetUserCallbacks() const {
-    return user_callbacks;
+const Thunks& BlockOfCode::GetUserCallbacks() const {
+    return thunks;
 }
 
 }  // namespace Dynarmic::Backend::X64

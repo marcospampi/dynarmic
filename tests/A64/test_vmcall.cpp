@@ -20,7 +20,6 @@ TEST_CASE("A64: Test vmcall return 0x7", "[a64]") {
 
     config.fastmem_address_space_bits = 64;
     config.fastmem_pointer = (void*)0;
-    config.vmcall_exit_address = 0;
 
     const auto stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE];
     const auto stack_top = (uintptr_t)stack + STACK_SIZE;
@@ -51,7 +50,6 @@ TEST_CASE("A64: Test vmcall add", "[a64]") {
     config.fastmem_address_space_bits = 64;
     config.fastmem_pointer = (void*)0;
     config.fastmem_allow_zero_base = true;
-    config.vmcall_exit_address = 0;
 
     u8 *stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE];
     uintptr_t stack_top = (uintptr_t)stack + STACK_SIZE;
@@ -111,7 +109,6 @@ TEST_CASE("A64: Test fibonacci", "[a64]") {
     config.fastmem_pointer = (void*)0;
     config.fastmem_allow_zero_base = true;
     config.enable_cycle_counting = false;
-    config.vmcall_exit_address = 0;
 
 
     u8 *stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE*2];

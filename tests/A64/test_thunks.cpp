@@ -31,11 +31,11 @@ void test_callback_halt( A64::Jit *jit ) {
 
 TEST_CASE("A64: Test 0xDEADBEEF", "[a64]") {
     A64TestEnv env;
-    const CallbackVector<u64, A64::Jit> callbacks = {
+    const ThunkVector<u64, A64::Jit> callbacks = {
         {0x20, "deadbeef_test", test_callback_0xdeadbeef, true }
     };
     A64::UserConfig config{&env};
-    config.user_callbacks = &callbacks;
+    config.thunk_vector = &callbacks;
 
     A64::Jit jit{config};
 
@@ -58,11 +58,11 @@ TEST_CASE("A64: Test increment", "[a64]") {
     const auto N_times = 0xdead;
 
     A64TestEnv env;
-    const CallbackVector<u64, A64::Jit> callbacks = {
+    const ThunkVector<u64, A64::Jit> callbacks = {
         {0x100, "test_callback_increment", test_callback_increment, true }
     };
     A64::UserConfig config{&env};
-    config.user_callbacks = &callbacks;
+    config.thunk_vector = &callbacks;
 
     A64::Jit jit{config};
 
@@ -86,10 +86,10 @@ TEST_CASE("A64: Test test_callback_halt!", "[a64]") {
 
     A64TestEnv env;
     A64::UserConfig config{&env};
-    const CallbackVector<u64, A64::Jit> callbacks = {
+    const ThunkVector<u64, A64::Jit> callbacks = {
         {0x100, "test_callback_halt", test_callback_halt<N>, true }
     };
-    config.user_callbacks = &callbacks;
+    config.thunk_vector = &callbacks;
 
     A64::Jit jit{config};
 

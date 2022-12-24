@@ -248,11 +248,11 @@ public:
     }
 
     void VMCall() {
-        SetRegister(static_cast<u64>(A64::Reg::LR), conf.vmcall_exit_address.value() );
+        SetRegister(static_cast<u64>(A64::Reg::LR), conf.vmcall_exit_address );
 
         HaltReason result = Run();
 
-        if ( !(result == HaltReason::ExitAddress  || (u32)result == 0) ) {
+        if ( result != HaltReason::ExitAddress ) {
             throw result;
         }
     
@@ -261,7 +261,7 @@ public:
     
 
 private:
-    static CodePtr GetCurrentBlockThunk(void* thisptr) { ///diocane
+    static CodePtr GetCurrentBlockThunk(void* thisptr) {
         Jit::Impl* this_ = static_cast<Jit::Impl*>(thisptr);
         return this_->GetCurrentBlock();
     }
@@ -271,16 +271,23 @@ private:
     }
 
     CodePtr GetCurrentBlock() {
-        return GetBlock(GetCurrentLocation());
+        if ( jit_state.pc == this->conf.vmcall_exit_address ) {
+            this->HaltExecution(HaltReason::ExitAddress);
+            return nullptr;
+        }
+        else {
+            return GetBlock(GetCurrentLocation());
+        }
     }
 
     CodePtr GetCurrentSingleStep() {
         return GetBlock(A64::LocationDescriptor{GetCurrentLocation()}.SetSingleStepping(true));
     }
 
-    CodePtr GetBlock(IR::LocationDescriptor current_location) { // get block
-        if (auto block = emitter.GetBasicBlock(current_location))
+    CodePtr GetBlock(IR::LocationDescriptor current_location) {
+        if (auto block = emitter.GetBasicBlock(current_location)) {
             return block->entrypoint;
+        }
 
         constexpr size_t MINIMUM_REMAINING_CODESIZE = 1 * 1024 * 1024;
         if (block_of_code.SpaceRemaining() < MINIMUM_REMAINING_CODESIZE) {

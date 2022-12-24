@@ -25,7 +25,7 @@ if ("A64" IN_LIST DYNARMIC_FRONTENDS)
         A64/misaligned_page_table.cpp
         A64/test_invalidation.cpp
         A64/testenv.h
-        A64/test_user_callbacks.cpp
+        A64/test_thunks.cpp
         A64/test_vmcall.cpp
     )
 endif()

@@ -37,7 +37,7 @@ void test_callback_halt( A32::Jit *jit ) {
 TEST_CASE("A32: Test 0xDEADBEEF", "[a32]") {
     ArmTestEnv test_env;
     A32::UserConfig config{&test_env};
-    config.user_callbacks = {
+    config.thunk_vector = {
         {0x20, "test_callback_set_reg_0xdeadbef", test_callback_set_reg_0xdeadbef, true }
     };
 
@@ -65,7 +65,7 @@ TEST_CASE("A32: Test increment", "[a32]") {
 
     ArmTestEnv test_env;
     A32::UserConfig config{&test_env};
-    config.user_callbacks = {
+    config.thunk_vector = {
         {0x20, "test_callback_increment", test_callback_increment, true }
     };
 
@@ -92,7 +92,7 @@ TEST_CASE("A32: Test test_callback_halt!", "[a32]") {
 
     ArmTestEnv test_env;
     A32::UserConfig config{&test_env};
-    config.user_callbacks = {
+    config.thunk_vector = {
         {0x20, "test_callback_increment", test_callback_halt<N>, true }
     };
 

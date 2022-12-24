@@ -239,7 +239,6 @@ public:
     template<typename T>
     void write(u64 vaddr, [[maybe_unused]] const T& value) {
         ASSERT_FALSE("Invalid write to address {:016X}\n", vaddr);
-        //memcpy(backing_memory + vaddr, &value, sizeof(T));
     }
 
     std::optional<std::uint32_t> MemoryReadCode(u64 vaddr) override {

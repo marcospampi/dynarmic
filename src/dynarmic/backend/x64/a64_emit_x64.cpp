@@ -193,6 +193,10 @@ void A64EmitX64::GenTerminalHandlers() {
         code.jne(code.GetReturnFromRunCodeAddress());
     }
     code.mov(rax, qword[r15 + offsetof(A64JitState, rsb_codeptrs) + rax * sizeof(u64)]);
+
+    code.test(rax, rax); // do not jump if codeptr is zero
+    code.jz(code.GetReturnFromRunCodeAddress());
+
     code.jmp(rax);
     PerfMapRegister(terminal_handler_pop_rsb_hint, code.getCurr(), "a64_terminal_handler_pop_rsb_hint");
 
@@ -215,6 +219,11 @@ void A64EmitX64::GenTerminalHandlers() {
         code.mov(qword[rbp + offsetof(FastDispatchEntry, location_descriptor)], rbx);
         code.LookupBlock();
         code.mov(ptr[rbp + offsetof(FastDispatchEntry, code_ptr)], rax);
+        
+        code.test(rax, rax); // do not jump if codeptr is zero
+        code.jz(code.GetReturnFromRunCodeAddress());
+
+
         code.jmp(rax);
         PerfMapRegister(terminal_handler_fast_dispatch_hint, code.getCurr(), "a64_terminal_handler_fast_dispatch_hint");
 
@@ -759,22 +768,13 @@ void A64EmitX64::Unpatch(const IR::LocationDescriptor& location) {
 
 
 void A64EmitX64::GenUserCallbacks() {
-    if ( conf.user_callbacks != nullptr ) {
-        for ( const auto &cb: *conf.user_callbacks ) {
-            auto bundle = std::make_unique<SimpleCallback>(cb.callback);
+    if ( conf.thunk_vector != nullptr ) {
+        for ( const auto &cb: *conf.thunk_vector ) {
+            auto bundle = std::make_unique<SimpleCallback>(cb.thunk);
             GenUserCallback(std::move(bundle), cb.address, cb.return_back);
         }
     }
-    if ( conf.vmcall_exit_address.has_value() ) {
-        auto vmcall_exit_address = conf.vmcall_exit_address.value();
-
-        void(*halt_exit_address)(A64::Jit *) = [](A64::Jit *jit) {
-            jit->HaltExecution(HaltReason::ExitAddress);
-        };
-        auto exit_address_bundle = std::make_unique<SimpleCallback>(halt_exit_address);
-        
-        GenUserCallback( std::move(exit_address_bundle), vmcall_exit_address, false );
-    }
+    
 }
 
 

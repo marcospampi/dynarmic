@@ -11,21 +11,19 @@
 #include <optional>
 namespace Dynarmic {
 
-using VAddr = std::uint64_t;
 
 template < class Interface >
-using UserHookCallbackFn = void (*)(Interface*);
+using ThunkFn = void (*)(Interface*);
 
 template <class VAddr, class Interface>
-struct UserCallback {
+struct Thunk {
     VAddr address;
     std::optional<const char*> name;
-    UserHookCallbackFn<Interface> callback;
+    ThunkFn<Interface> thunk;
     bool return_back;
 };
 
 template <class VAddr, class Interface>
-using CallbackVector = std::vector<UserCallback<VAddr, Interface>>;
-//using UserHookCallback = std::tuple<Vaddr, std::optional<std::string>, std::uint64_t(*)(Interface*)>;
+using ThunkVector = std::vector<Thunk<VAddr, Interface>>;
 
 }
