@@ -21,8 +21,8 @@ TEST_CASE("A64: Test vmcall return 0x7", "[a64]") {
     config.fastmem_address_space_bits = 64;
     config.fastmem_pointer = (void*)0;
 
-    const auto stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE];
-    const auto stack_top = (uintptr_t)stack + STACK_SIZE;
+    u8 *stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE];
+    u64 stack_top = reinterpret_cast<u64>(stack) + STACK_SIZE;
 
     A64::Jit jit{config};
 
@@ -31,6 +31,9 @@ TEST_CASE("A64: Test vmcall return 0x7", "[a64]") {
     u64 result = jit.VMCall<u64>(reinterpret_cast<u64>(return_7));
 
     REQUIRE(result == 0x7);
+
+    delete[] stack;
+
 }
 
 TEST_CASE("A64: Test vmcall add", "[a64]") {
@@ -52,7 +55,7 @@ TEST_CASE("A64: Test vmcall add", "[a64]") {
     config.fastmem_allow_zero_base = true;
 
     u8 *stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE];
-    uintptr_t stack_top = (uintptr_t)stack + STACK_SIZE;
+    u64 stack_top = reinterpret_cast<u64>(stack) + STACK_SIZE;
     printf("stack: %p, stack_top: %p\n", stack, (u8*)stack_top);
 
     A64::Jit jit{config};
@@ -62,6 +65,9 @@ TEST_CASE("A64: Test vmcall add", "[a64]") {
     u64 result = jit.VMCall<u64>(reinterpret_cast<u64>(add),10,6);
 
     REQUIRE(result == 16);
+    
+    delete[] stack;
+
 }
 
 
@@ -111,16 +117,18 @@ TEST_CASE("A64: Test fibonacci", "[a64]") {
     config.enable_cycle_counting = false;
 
 
-    u8 *stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE*2];
-    uintptr_t stack_top = (uintptr_t)stack + STACK_SIZE*2;
+    u8 *stack = new (std::align_val_t(STACK_SIZE)) u8[STACK_SIZE];
+    u64 stack_top = reinterpret_cast<u64>(stack) + STACK_SIZE;
     printf("stack: %p, stack_top: %p\n", stack, (u8*)stack_top);
 
     A64::Jit jit{config};
 
     jit.SetSP(stack_top);
     
-    u64 result = jit.VMCall<u64>(reinterpret_cast<u64>(fibonacci),N);
+    int result = jit.VMCall<int>(reinterpret_cast<u64>(fibonacci),N);
 
     REQUIRE(result == fib(N));
+
+    delete[] stack;
 
 }
