@@ -80,7 +80,7 @@ A64EmitX64::BlockDescriptor A64EmitX64::Emit(IR::Block& block) {
         if (conf.page_table) {
             gprs.erase(std::find(gprs.begin(), gprs.end(), HostLoc::R14));
         }
-        if (conf.fastmem_pointer) {
+        if (conf.fastmem_pointer || conf.fastmem_allow_zero_base ) {
             gprs.erase(std::find(gprs.begin(), gprs.end(), HostLoc::R13));
         }
         return gprs;
@@ -757,12 +757,23 @@ void A64EmitX64::Unpatch(const IR::LocationDescriptor& location) {
     }
 }
 
+
 void A64EmitX64::GenUserCallbacks() {
     if ( conf.user_callbacks != nullptr ) {
         for ( const auto &cb: *conf.user_callbacks ) {
             auto bundle = std::make_unique<SimpleCallback>(cb.callback);
             GenUserCallback(std::move(bundle), cb.address, cb.return_back);
         }
+    }
+    if ( conf.vmcall_exit_address.has_value() ) {
+        auto vmcall_exit_address = conf.vmcall_exit_address.value();
+
+        void(*halt_exit_address)(A64::Jit *) = [](A64::Jit *jit) {
+            jit->HaltExecution(HaltReason::ExitAddress);
+        };
+        auto exit_address_bundle = std::make_unique<SimpleCallback>(halt_exit_address);
+        
+        GenUserCallback( std::move(exit_address_bundle), vmcall_exit_address, false );
     }
 }
 

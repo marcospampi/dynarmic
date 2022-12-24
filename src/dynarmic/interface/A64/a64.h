@@ -130,9 +130,48 @@ public:
      */
     std::vector<std::string> Disassemble() const;
 
+    /*
+     * Setup cpu state to perform an ABI call,
+     * would not setup LinkRegister.
+    */
+    template <typename... Args> constexpr
+    inline void SetupVMCall(VAddr addr, Args&&... args) {
+        [[maybe_unused]] int ireg = 0;
+        //int freg = 0;
+        ([&] {
+            if constexpr ( std::is_integral_v<std::remove_reference_t<Args>>) {
+                SetRegister(ireg++, args);
+            }
+            //else
+            //    static_assert(std::false_type::value, "Unknown type");
+        }(), ...);
+        SetPC(addr);
+    } 
+    /*
+     * Setup cpu state and perform an ABI call,
+     * would setup LinkRegister to config.exit_address.
+     * Use this only if there's no cycle counting.
+     * Would throw HaltReason, would fail iff config.vmcall_exit_address is not set.
+    */
+    template <typename R, typename... Args> constexpr
+    inline R VMCall(VAddr addr, Args&&... args) {
+        SetupVMCall(addr, args...);
+        perform_vmcall();
+
+        if constexpr ( std::is_integral_v<std::remove_reference_t<R>>) {
+            return static_cast<R>(GetRegister(0));
+        }
+        else if constexpr ( std::is_void_v<R> ) {
+            return;
+        }
+        //else
+        //    static_assert(std::false_type::value, "Unknown type");
+    } 
+
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;
+    void perform_vmcall();
 };
 
 }  // namespace A64

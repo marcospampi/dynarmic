@@ -248,6 +248,10 @@ struct UserConfig {
     /// be. If the host page faults on an address, the JIT will fallback to calling the
     /// MemoryRead*/MemoryWrite* callbacks.
     void* fastmem_pointer = nullptr;
+
+    /// Enables fastmem of pointer base 0
+    bool fastmem_allow_zero_base = false;
+
     /// Determines if instructions that pagefault should cause recompilation of that block
     /// with fastmem disabled.
     /// Recompiled code will use the page_table if this is available, otherwise memory
@@ -297,6 +301,9 @@ struct UserConfig {
 
     // A vector of callbacks that guest can call by jump to their defined address
     const CallbackVector<VAddr, Jit> *user_callbacks = nullptr;
+
+    // Exit address, whenever the CPU jumps to this value, execution will halt
+    std::optional<VAddr> vmcall_exit_address = std::nullopt;
 };
 
 }  // namespace A64

@@ -20,6 +20,8 @@
 #include "dynarmic/common/atomic.h"
 #include "dynarmic/common/x64_disassemble.h"
 #include "dynarmic/frontend/A64/translate/a64_translate.h"
+#include "dynarmic/frontend/A64/a64_types.h"
+
 #include "dynarmic/interface/A64/a64.h"
 #include "dynarmic/ir/basic_block.h"
 #include "dynarmic/ir/opt/passes.h"
@@ -42,7 +44,7 @@ static std::function<void(BlockOfCode&)> GenRCP(const A64::UserConfig& conf) {
         if (conf.page_table) {
             code.mov(code.r14, mcl::bit_cast<u64>(conf.page_table));
         }
-        if (conf.fastmem_pointer) {
+        if (conf.fastmem_pointer || conf.fastmem_allow_zero_base ) {
             code.mov(code.r13, mcl::bit_cast<u64>(conf.fastmem_pointer));
         }
     };
@@ -54,6 +56,7 @@ static Optimization::PolyfillOptions GenPolyfillOptions(const BlockOfCode& code)
         .vector_multiply_widen = true,
     };
 }
+
 
 struct Jit::Impl final {
 public:
@@ -243,6 +246,19 @@ public:
         const size_t size = reinterpret_cast<const char*>(block_of_code.getCurr()) - reinterpret_cast<const char*>(block_of_code.GetCodeBegin());
         return Common::DisassembleX64(block_of_code.GetCodeBegin(), size);
     }
+
+    void VMCall() {
+        SetRegister(static_cast<u64>(A64::Reg::LR), conf.vmcall_exit_address.value() );
+
+        HaltReason result = Run();
+
+        if ( !(result == HaltReason::ExitAddress  || (u32)result == 0) ) {
+            throw result;
+        }
+    
+    }
+
+    
 
 private:
     static CodePtr GetCurrentBlockThunk(void* thisptr) { ///diocane
@@ -453,6 +469,10 @@ void Jit::DumpDisassembly() const {
 
 std::vector<std::string> Jit::Disassemble() const {
     return impl->Disassemble();
+}
+
+void Jit::perform_vmcall() {
+    impl->VMCall();
 }
 
 }  // namespace Dynarmic::A64

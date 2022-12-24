@@ -18,9 +18,9 @@ option(DYNARMIC_TESTS_USE_UNICORN "Enable fuzzing tests against unicorn" OFF)
 option(DYNARMIC_USE_LLVM "Support disassembly of jitted x86_64 code using LLVM" OFF)
 option(DYNARMIC_USE_PRECOMPILED_HEADERS "Use precompiled headers" ON)
 option(DYNARMIC_USE_BUNDLED_EXTERNALS "Use all bundled externals (useful when e.g. cross-compiling)" OFF)
-option(DYNARMIC_WARNINGS_AS_ERRORS "Warnings as errors" ${MASTER_PROJECT})
+option(DYNARMIC_WARNINGS_AS_ERRORS "Warnings as errors" OFF)
 if (NOT DEFINED DYNARMIC_FRONTENDS)
-    set(DYNARMIC_FRONTENDS "A32;A64" CACHE STRING "Selects which frontends to enable")
+    set(DYNARMIC_FRONTENDS "A64" CACHE STRING "Selects which frontends to enable")
 endif()
 
 # Default to a Release build
